@@ -26,6 +26,9 @@ This project is designed as a **portfolio piece** to demonstrate skills in:
 - [x] Basic **board + columns + cards** layout
 - [x] **Drag & Drop** working with `@dnd-kit/core`
 - [x] Dark theme design (board/columns/cards contrast)
+- [x] **Zustand** integrated for global state management
+- [x] Card moves now update Zustand store only on drop (no lag during drag)
+- [x] Optimized drag performance by using local state (via DnD Kit) for drag position
 
 ---
 
@@ -33,9 +36,9 @@ This project is designed as a **portfolio piece** to demonstrate skills in:
 
 1. **State Management**
 
-   - [ ] Integrate Zustand store
-   - [ ] Persist card moves in global state
-   - [ ] Ensure drag events update Zustand cleanly
+   - [x] Integrate Zustand store
+   - [x] Persist card moves in global state
+   - [x] Ensure drag events update Zustand cleanly (only update on drop, not on every drag event)
 
 2. **Real-Time Sync**
 
