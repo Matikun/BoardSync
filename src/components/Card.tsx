@@ -1,33 +1,36 @@
-import type { FC } from "react";
+import React from "react";
+import type { Card as CardType } from "../types";
 import { useDraggable } from "@dnd-kit/core";
 
 type Props = {
-  id: string;
-  title: string;
+  card: CardType;
 };
 
-const Card: FC<Props> = ({ id, title }) => {
-  const { attributes, listeners, setNodeRef, transform } = useDraggable({
-    id,
-  });
-
-  const style = {
-    transform: transform
-      ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
-      : undefined,
-  };
+function CardComponent({ card }: Props) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({
+      id: card.id,
+    });
 
   return (
     <div
       ref={setNodeRef}
-      style={style}
       {...listeners}
       {...attributes}
-      className="p-3 rounded-lg bg-gray-700 border border-gray-600 shadow-sm cursor-grab hover:bg-gray-600 transition-colors text-gray-100"
+      style={{
+        transform: transform
+          ? `translate3d(${transform.x}px, ${transform.y}px, 0)`
+          : undefined,
+        opacity: isDragging ? 0.5 : 1,
+      }}
+      className="bg-gray-700 p-3 rounded-lg shadow hover:bg-gray-600 transition"
     >
-      {title}
+      <h3 className="font-medium">{card.title}</h3>
+      {card.description && (
+        <p className="text-sm text-gray-300">{card.description}</p>
+      )}
     </div>
   );
-};
+}
 
-export default Card;
+export default React.memo(CardComponent);

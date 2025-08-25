@@ -3,7 +3,6 @@ export type Card = {
   title: string;
   description?: string;
 };
-
 export type Column = {
   id: string;
   title: string;

@@ -1,51 +1,36 @@
 import { DndContext } from "@dnd-kit/core";
-import type { FC } from "react";
+
 import type { DragEndEvent } from "@dnd-kit/core";
-import { useState } from "react";
+
 import Column from "./Column";
 
-import { initialBoard } from "../data";
-import Card from "./Card";
-import type { BoardType } from "../types";
+import { useBoardStore } from "../store/BoardStore";
+import { useMemo } from "react";
 
-const Board: FC = () => {
-  const [board, setBoard] = useState<BoardType>(initialBoard);
+export default function Board() {
+  const columnsObj = useBoardStore((s) => s.columns);
+  const moveCard = useBoardStore((s) => s.moveCard);
+
+  // Memoize columns array to prevent unnecessary re-renders
+  const columns = useMemo(() => Object.values(columnsObj), [columnsObj]);
 
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
     if (!over) return;
 
-    const sourceColumn = board.columns.find((col) =>
-      col.cardIds.includes(active.id as string)
-    );
-    const targetColumn = board.columns.find((col) => col.id === over.id);
+    const cardId = active.id.toString();
+    const [toColumnId, toIndex] = over.id.toString().split("::");
 
-    if (!sourceColumn || !targetColumn) return;
-
-    // remove from source
-    sourceColumn.cardIds = sourceColumn.cardIds.filter(
-      (cid) => cid !== active.id
-    );
-    // add to target
-    targetColumn.cardIds.push(active.id as string);
-
-    setBoard({ ...board, columns: [...board.columns] });
+    moveCard(cardId, toColumnId, Number(toIndex));
   };
 
   return (
     <DndContext onDragEnd={handleDragEnd}>
-      {/* 🔥 Horizontal layout with scroll */}
-      <div className="flex gap-6 p-6 h-screen overflow-x-auto bg-gray-900 text-gray-100">
-        {board.columns.map((col) => (
-          <Column key={col.id} id={col.id} title={col.title}>
-            {col.cardIds.map((cid) => {
-              const card = board.cards[cid];
-              return <Card key={card.id} id={card.id} title={card.title} />;
-            })}
-          </Column>
+      <div className="flex gap-4 p-4 bg-gray-900 min-h-screen text-gray-100">
+        {columns.map((col) => (
+          <Column key={col.id} column={col} />
         ))}
       </div>
     </DndContext>
   );
-};
-export default Board;
+}
