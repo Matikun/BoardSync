@@ -7,52 +7,37 @@ export type BoardState = {
   moveCard: (cardId: string, toColumnId: string, toIndex: number) => void;
 };
 
-export const useBoardStore = create<BoardState>((set) => ({
+export const useBoardStore = create<BoardState>((set, get) => ({
+  columns: {
+    "col-1": { id: "col-1", title: "Todo", cardIds: ["c1", "c2"] },
+    "col-2": { id: "col-2", title: "In Progress", cardIds: [] },
+    "col-3": { id: "col-3", title: "Done", cardIds: [] },
+  },
   cards: {
     c1: { id: "c1", title: "First Task" },
     c2: { id: "c2", title: "Second Task" },
   },
-  columns: {
-    todo: { id: "todo", title: "To Do", cardIds: ["c1"] },
-    doing: { id: "doing", title: "Doing", cardIds: ["c2"] },
-    done: { id: "done", title: "Done", cardIds: [] },
+  moveCard: (cardId, toColumnId, index) => {
+    const state = get();
+
+    const fromColumnId = Object.keys(state.columns).find((colId) =>
+      state.columns[colId].cardIds.includes(cardId)
+    );
+    if (!fromColumnId) return;
+
+    const fromColumn = state.columns[fromColumnId];
+    const toColumn = state.columns[toColumnId];
+
+    const newFromCardIds = fromColumn.cardIds.filter((id) => id !== cardId);
+    const newToCardIds = [...toColumn.cardIds.filter((id) => id !== cardId)];
+    newToCardIds.splice(index, 0, cardId);
+
+    set({
+      columns: {
+        ...state.columns,
+        [fromColumnId]: { ...fromColumn, cardIds: newFromCardIds },
+        [toColumnId]: { ...toColumn, cardIds: newToCardIds },
+      },
+    });
   },
-  moveCard: (cardId, toColumnId, index) =>
-    set((state) => {
-      // find origin column
-      const fromColumnId = Object.keys(state.columns).find((colId) =>
-        state.columns[colId].cardIds.includes(cardId)
-      );
-      if (!fromColumnId) return state;
-
-      const fromColumn = state.columns[fromColumnId];
-      const toColumn = state.columns[toColumnId];
-
-      // remove card from old column
-      const newFrom = {
-        ...fromColumn,
-        cardIds: fromColumn.cardIds.filter((id) => id !== cardId),
-      };
-
-      // remove the card if it already exists in the target (avoid duplicates)
-      const cleanedTo = toColumn.cardIds.filter((id) => id !== cardId);
-
-      // insert at the given index
-      const newTo = {
-        ...toColumn,
-        cardIds: [
-          ...cleanedTo.slice(0, index),
-          cardId,
-          ...cleanedTo.slice(index),
-        ],
-      };
-
-      return {
-        columns: {
-          ...state.columns,
-          [fromColumnId]: newFrom,
-          [toColumnId]: newTo,
-        },
-      };
-    }),
 }));

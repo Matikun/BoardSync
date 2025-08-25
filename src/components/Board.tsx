@@ -5,24 +5,25 @@ import type { DragEndEvent } from "@dnd-kit/core";
 import Column from "./Column";
 
 import { useBoardStore } from "../store/BoardStore";
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 export default function Board() {
   const columnsObj = useBoardStore((s) => s.columns);
   const moveCard = useBoardStore((s) => s.moveCard);
 
-  // Memoize columns array to prevent unnecessary re-renders
   const columns = useMemo(() => Object.values(columnsObj), [columnsObj]);
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over) return;
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+      if (!over) return;
 
-    const cardId = active.id.toString();
-    const [toColumnId, toIndex] = over.id.toString().split("::");
-
-    moveCard(cardId, toColumnId, Number(toIndex));
-  };
+      const cardId = active.id.toString();
+      const [toColumnId, toIndex] = over.id.toString().split("::");
+      moveCard(cardId, toColumnId, Number(toIndex));
+    },
+    [moveCard]
+  );
 
   return (
     <DndContext onDragEnd={handleDragEnd}>

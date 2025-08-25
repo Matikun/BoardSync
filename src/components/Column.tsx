@@ -11,14 +11,13 @@ type Props = {
 function ColumnComponent({ column }: Props) {
   const cardsStore = useBoardStore((s) => s.cards);
 
-  // Only recompute the cards array if column.cardIds or store.cards changes
   const cards = useMemo(
     () => column.cardIds.map((id) => cardsStore[id]),
     [column.cardIds, cardsStore]
   );
 
   const { setNodeRef } = useDroppable({
-    id: `${column.id}::${column.cardIds.length}`, // drop at end
+    id: `${column.id}::${column.cardIds.length}`,
   });
 
   return (
