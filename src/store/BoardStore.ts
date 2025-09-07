@@ -5,6 +5,10 @@ export type BoardState = {
   cards: Record<string, Card>;
   columns: Record<string, Column>;
   moveCard: (cardId: string, toColumnId: string, toIndex: number) => void;
+  setBoard: (board: {
+    cards: Record<string, Card>;
+    columns: Record<string, Column>;
+  }) => void;
 };
 
 export const useBoardStore = create<BoardState>((set, get) => ({
@@ -17,27 +21,29 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     c1: { id: "c1", title: "First Task" },
     c2: { id: "c2", title: "Second Task" },
   },
-  moveCard: (cardId, toColumnId, index) => {
+  moveCard: (cardId, toColumnId, toIndex) => {
     const state = get();
-
+    // Find the column containing the card
     const fromColumnId = Object.keys(state.columns).find((colId) =>
       state.columns[colId].cardIds.includes(cardId)
     );
     if (!fromColumnId) return;
-
-    const fromColumn = state.columns[fromColumnId];
-    const toColumn = state.columns[toColumnId];
-
-    const newFromCardIds = fromColumn.cardIds.filter((id) => id !== cardId);
-    const newToCardIds = [...toColumn.cardIds.filter((id) => id !== cardId)];
-    newToCardIds.splice(index, 0, cardId);
-
-    set({
-      columns: {
-        ...state.columns,
-        [fromColumnId]: { ...fromColumn, cardIds: newFromCardIds },
-        [toColumnId]: { ...toColumn, cardIds: newToCardIds },
-      },
-    });
+    // Remove card from old column
+    const newColumns = { ...state.columns };
+    newColumns[fromColumnId] = {
+      ...newColumns[fromColumnId],
+      cardIds: newColumns[fromColumnId].cardIds.filter((id) => id !== cardId),
+    };
+    // Insert card into new column
+    newColumns[toColumnId] = {
+      ...newColumns[toColumnId],
+      cardIds: [
+        ...newColumns[toColumnId].cardIds.slice(0, toIndex),
+        cardId,
+        ...newColumns[toColumnId].cardIds.slice(toIndex),
+      ],
+    };
+    set({ columns: newColumns });
   },
+  setBoard: (board) => set({ cards: board.cards, columns: board.columns }),
 }));

@@ -13,7 +13,7 @@ This project is designed as a **portfolio piece** to demonstrate skills in:
 
 - React + TypeScript
 - State management (Zustand)
-- Real-time features (WebSockets/Firebase)
+- Real-time features (WebSockets/Socket.IO)
 - Optimistic UI patterns
 - Component architecture & performance optimization
 
@@ -29,6 +29,11 @@ This project is designed as a **portfolio piece** to demonstrate skills in:
 - [x] **Zustand** integrated for global state management
 - [x] Card moves now update Zustand store only on drop (no lag during drag)
 - [x] Optimized drag performance by using local state (via DnD Kit) for drag position
+- [x] **Backend (Express + Socket.IO)** set up for REST API and real-time sync
+- [x] **CORS** enabled for frontend-backend communication
+- [x] **Drag overlay animation** working (see Board.tsx for implementation)
+- [x] Real-time card movement and sync is fully functional
+- [x] Backend and frontend are integrated via REST and Socket.IO
 
 ---
 
@@ -42,13 +47,13 @@ This project is designed as a **portfolio piece** to demonstrate skills in:
 
 2. **Real-Time Sync**
 
-   - [ ] Create Node.js WebSocket server
-   - [ ] Connect frontend to server
-   - [ ] Broadcast card moves to all clients
+   - [x] Create Node.js WebSocket server (Socket.IO)
+   - [x] Connect frontend to server
+   - [x] Broadcast card moves to all clients
 
 3. **UX Enhancements**
 
-   - [ ] Smooth drag animations & drop placeholders
+   - [x] Smooth drag animations & drop placeholders (DragOverlay)
    - [ ] Inline card editing (title/description)
    - [ ] Optimistic UI (instant move, rollback if server fails)
 
@@ -68,10 +73,13 @@ src/
 │ ├── Column.tsx
 │ └── Card.tsx
 ├── store/
-│ └── boardStore.ts (TODO: Zustand setup)
+│ └── BoardStore.ts
 ├── data/
 │ └── initialBoard.ts
 ├── types.ts
+backend/
+├── src/
+│ └── server.js
 
 ---
 
@@ -87,5 +95,5 @@ src/
 ## 📅 Roadmap Estimate
 
 - **Week 1**: Core board + drag & drop ✅
-- **Week 2**: Zustand + WebSocket integration (real-time)
+- **Week 2**: Zustand + WebSocket/Socket.IO integration (real-time) ✅
 - **Week 3**: Polishing + optional features for portfolio

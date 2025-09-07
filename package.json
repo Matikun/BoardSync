@@ -11,12 +11,14 @@
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
     "@tailwindcss/vite": "^4.1.12",
     "autoprefixer": "^10.4.21",
     "node": "^24.6.0",
     "postcss": "^8.5.6",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "socket.io-client": "^4.8.1",
     "tailwindcss": "^4.1.12",
     "zustand": "^5.0.8"
   },
