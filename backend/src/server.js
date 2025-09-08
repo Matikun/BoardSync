@@ -1,72 +1,70 @@
 const express = require("express");
-const cors = require("cors"); // <-- Add this line
+const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
+const { PrismaClient } = require("@prisma/client");
 
 const app = express();
-app.use(cors({ origin: "*" })); // <-- Add this line
+app.use(cors({ origin: "*" }));
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: "*" },
 });
+const prisma = new PrismaClient();
 
 app.use(express.json());
 
-// In-memory board data
-const board = {
-  columns: {
-    "col-1": { id: "col-1", title: "Todo", cardIds: ["c1", "c2"] },
-    "col-2": { id: "col-2", title: "In Progress", cardIds: [] },
-    "col-3": { id: "col-3", title: "Done", cardIds: [] },
-  },
-  cards: {
-    c1: { id: "c1", title: "First Task" },
-    c2: { id: "c2", title: "Second Task" },
-  },
-};
-
-// REST endpoint to get board data
-app.get("/api/board", (req, res) => {
-  res.json(board);
+// REST endpoint to get board data from Prisma/Postgres
+app.get("/api/board", async (req, res) => {
+  try {
+    const board = await prisma.board.findFirst({
+      include: {
+        columns: {
+          include: {
+            cards: true,
+          },
+        },
+      },
+    });
+    res.json(board);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch board" });
+  }
 });
 
-// Move card REST endpoint
-app.post("/api/move-card", (req, res) => {
+// Move card REST endpoint (simplified for Prisma)
+// so im getting an 500 error what is wrong with my server?
+app.post("/api/move-card", async (req, res) => {
   const { cardId, toColumnId, toIndex } = req.body;
-  // Find the column containing the card
-  const fromColumnId = Object.keys(board.columns).find((colId) =>
-    board.columns[colId].cardIds.includes(cardId)
-  );
-  if (!fromColumnId) return res.status(400).json({ error: "Card not found" });
-
-  // Remove card from old column
-  board.columns[fromColumnId].cardIds = board.columns[
-    fromColumnId
-  ].cardIds.filter((id) => id !== cardId);
-  // Insert card into new column
-  board.columns[toColumnId].cardIds.splice(toIndex, 0, cardId);
-
-  res.json({ success: true, board });
-  // Broadcast to other clients
-  io.emit("card-moved", { cardId, fromColumnId, toColumnId, toIndex });
+  try {
+    // Update the card's columnId
+    await prisma.card.update({
+      where: { id: cardId },
+      data: { columnId: toColumnId },
+    });
+    // (Optional: handle ordering if you add a position field)
+    res.json({ success: true });
+    io.emit("card-moved", { cardId, toColumnId, toIndex });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Failed to move card" });
+  }
 });
 
 // Socket.IO event
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
-  socket.on("move-card", (data) => {
-    // Optionally update board state here if you want real-time sync
+  socket.on("move-card", async (data) => {
     const { cardId, toColumnId, toIndex } = data;
-    const fromColumnId = Object.keys(board.columns).find((colId) =>
-      board.columns[colId].cardIds.includes(cardId)
-    );
-    if (fromColumnId) {
-      board.columns[fromColumnId].cardIds = board.columns[
-        fromColumnId
-      ].cardIds.filter((id) => id !== cardId);
-      board.columns[toColumnId].cardIds.splice(toIndex, 0, cardId);
-      io.emit("card-moved", { cardId, fromColumnId, toColumnId, toIndex });
+    try {
+      await prisma.card.update({
+        where: { id: cardId },
+        data: { columnId: toColumnId },
+      });
+      io.emit("card-moved", { cardId, toColumnId, toIndex });
+    } catch (error) {
+      // Optionally handle error
     }
   });
 

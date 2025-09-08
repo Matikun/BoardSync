@@ -8,8 +8,3 @@ export type Column = {
   title: string;
   cardIds: string[];
 };
-
-export type BoardType = {
-  columns: Column[];
-  cards: Record<string, Card>;
-};
